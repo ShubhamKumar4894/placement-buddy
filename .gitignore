@@ -1,0 +1,54 @@
+# =========================
+# Node / Frontend (Next.js)
+# =========================
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+frontend/.env.development
+frontend/.turbo/
+frontend/.vercel/
+frontend/.swc/
+frontend/dist/
+
+# =========================
+# Python / Backend (FastAPI)
+# =========================
+backend/__pycache__/
+backend/.env
+backend/.venv/
+backend/venv/
+backend/env/
+backend/.mypy_cache/
+backend/.pytest_cache/
+backend/.ruff_cache/
+backend/.idea/
+backend/.vscode/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+backend/.DS_Store
+backend/uploads/
+
+# =========================
+# System / Editor files
+# =========================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+.env
+.env.local
+.env.production
+.env.development
+
+
+*.egg-info/
+build/
+dist/
+
+__pycache__/

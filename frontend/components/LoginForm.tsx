@@ -1,25 +1,32 @@
 "use client";
+import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
+import toast from "react-hot-toast";
 const LoginForm = () => {
+  const {login} = useAuth();
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit= async(e: React.FormEvent<HTMLFormElement>)=>{
     e.preventDefault();
-  };
-
-  // Google login
-//   const handleGoogle = () => {
-//     signIn("google", { callbackUrl: "/" });
-//   };
+    setLoading(true);
+    try {
+      await login(form.email, form.password);
+      toast.success("Login successful!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Login failed. Please try again.");
+    }finally{
+      setLoading(false);
+    }
+  }
+  
 
   return (
     <div className="min-h-2/3 flex items-center justify-center bg-gray-50">
@@ -52,8 +59,6 @@ const LoginForm = () => {
               placeholder="Enter your password"
             />
           </div>
-
-          {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <button
             type="submit"

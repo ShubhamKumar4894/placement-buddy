@@ -7,7 +7,7 @@ router = APIRouter()
 class RegisterIn(BaseModel):
     email: str
     password: str
-    full_name: str | None = None
+    username: str | None = None
 
 class LoginIn(BaseModel):
     email: str
@@ -16,7 +16,7 @@ class LoginIn(BaseModel):
 @router.post("/register")
 async def register(payload: RegisterIn):
     try:
-        user= await register_user(payload.email, payload.password, payload.full_name)
+        user= await register_user(payload.email, payload.password, payload.username)
         return {"message": "User registered successfully","id": str(user.id), "email": user.email}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

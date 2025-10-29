@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
-
+import { useAuth } from "@/context/AuthContext";
+import toast from "react-hot-toast";
 const RegisterForm = () => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const { registerUser } = useAuth();
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -16,8 +17,18 @@ const RegisterForm = () => {
       [e.target.name]: e.target.value,
     });
   };
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+    try {
+      await registerUser(form.username, form.email, form.password);
+      toast.success("Registration successful! now login with your credentials");
+    } catch (error) {
+      console.error(error);
+      toast.error("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div className="min-h-2/3 flex items-center justify-center bg-gray-50 ">
@@ -71,8 +82,6 @@ const RegisterForm = () => {
               placeholder="Enter your password"
             />
           </div>
-
-          {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <button
             type="submit"

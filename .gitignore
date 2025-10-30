@@ -12,6 +12,7 @@ frontend/.turbo/
 frontend/.vercel/
 frontend/.swc/
 frontend/dist/
+frontend/readme.md/
 
 # =========================
 # Python / Backend (FastAPI)

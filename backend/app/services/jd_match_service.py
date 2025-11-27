@@ -1,9 +1,9 @@
 import json
 import re
-from groq import Groq
+from openai import OpenAI
 from app.config import settings
 
-client = Groq(api_key=settings.GROQ_API_KEY)
+client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 class JDMatchService:
     @staticmethod
@@ -40,7 +40,7 @@ class JDMatchService:
             }}
         """
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="gpt-4.1",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
             max_tokens=800

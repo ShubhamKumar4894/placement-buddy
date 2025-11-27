@@ -1,40 +1,86 @@
-# Placement Buddy
+# 🚀 PlacementBuddy – AI-Powered Resume Analysis & Job Match Platform
 
-**Placement Buddy** is an AI-powered resume evaluation and placement assistance web app.  
-It analyzes uploaded resumes, extracts skills and experience using NLP, compares them with job descriptions, and provides smart feedback powered by **OpenAI GPT-4o**.
+PlacementBuddy is an **AI-driven career assistant** that helps students and job seekers improve their resumes, analyze strengths, get ATS scores, and match resumes with job descriptions — all through a clean and modern interface.
+
+This project consists of:
+
+- ✨ **Next.js 14 (App Router) Frontend**
+- ⚡ **FastAPI Backend**
+- 🤖 **AI Resume Analysis using OpenAI**
+- 📄 **Cloudinary Resume Upload**
+- 🧠 **ATS Score Calculation**
+- 🎯 **Job Description Match**
+- 🔒 **JWT Authentication**
+- 📚 **MongoDB + Beanie ODM**
 
 ---
 
-## 🚀 Project Overview
+## ⭐ Features
 
-### 🔄 End-to-End Workflow
+### 📤 Resume Upload
+- Upload PDF/DOCX resumes
+- Stored securely on Cloudinary
+- Auto-extract text and metadata
+- Live preview using iframe viewer
 
-```text
-1️⃣  User uploads resume (PDF)
-     ↓
-2️⃣  PyPDF2 / pdfplumber extracts raw text
-     ↓
-3️⃣  spaCy + Regex parse and identify structured sections
-     ↓
-4️⃣  Custom database extracts and matches relevant skills
-     ↓
-5️⃣  OpenAI GPT-4o analyzes and generates feedback
-     ↓
-6️⃣  Job match % is calculated from pasted job description
-     ↓
-7️⃣  Results are returned to frontend in real time
+### 🧠 AI Resume Analysis
+- Uses OpenAI to analyze:
+  - Resume quality  
+  - Missing improvements  
+  - Skill insights  
+  - Top weaknesses & suggestions  
+- Analysis is saved → reused instantly next time
 
-## 🧩 Features
+### 🔍 ATS Score System
+Automatic checks for:
+- Missing sections  
+- Email/phone detection  
+- Resume length  
+- Skill coverage  
+- Structure & formatting issues  
 
-✅ **AI-Powered Resume Analysis** — Uses GPT-4o to generate detailed resume feedback
+### 🎯 Job Description Match
+- Paste a job description
+- AI compares resume with JD
+- Provides:
+  - Match percentage  
+  - Missing skills  
+  - Matching skills  
+  - Suggested improvements  
 
-✅ **Skill Extraction Engine** — spaCy + regex + database lookup for technical and soft skills
+### 🔐 Authentication
+- Secure JWT login system
+- Protected API routes
+- Frontend protected pages
 
-✅ **Job Match Scoring** — Compares resume content with a user-provided job description
+### 📊 Dashboard
+Includes:
+- Resume preview  
+- “Analyze Resume” / “View Analysis” button  
+- JD Match input  
+- Match results + skill gap  
 
-✅ **Secure Authentication** — Email/password using JWT
+---
 
-✅ **Real-Time Feedback** — Fast API responses served to the Next.js frontend
+## 🏗 Tech Stack
 
-✅ **Modern UI** — Clean, responsive interface built with TailwindCSS and TypeScript
-```
+### **Frontend**
+- Next.js 14 (App Router)
+- TypeScript
+- TailwindCSS
+- Axios
+- LocalStorage auth
+- Cloudinary PDF viewer
+- Vercel (recommended)
+
+### **Backend**
+- FastAPI (Python)
+- MongoDB + Beanie ODM
+- OpenAI API
+- Cloudinary SDK
+- pdfplumber + docx parser
+- JWT (Jose)
+- Uvicorn
+
+---
+

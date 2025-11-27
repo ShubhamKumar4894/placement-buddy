@@ -23,6 +23,7 @@ const RegisterForm = () => {
     try {
       await registerUser(form.username, form.email, form.password);
       toast.success("Registration successful! now login with your credentials");
+      window.location.href = "/dashboard";
     } catch (error) {
       console.error(error);
       toast.error("Registration failed. Please try again.");
@@ -31,68 +32,45 @@ const RegisterForm = () => {
     }
   };
   return (
-    <div className="min-h-2/3 flex items-center justify-center bg-gray-50 ">
-      <div className="w-full max-w-md bg-white p-3 rounded-2xl shadow-md">
-        <h2 className="text-2xl font-semibold text-center mb-6 text-blue-400">
-          Create your account
-        </h2>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Username */}
+      <input
+        type="text"
+        name="username"
+        placeholder="Username"
+        value={form.username}
+        onChange={handleChange}
+        className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/20 focus:border-[var(--neon)] outline-none"
+      />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-blue-400">
-              Username
-            </label>
-            <input
-              type="text"
-              name="username"
-              value={form.username}
-              onChange={handleChange}
-              required
-              className="w-full text-gray-600 px-3 py-2 border border-gray-300 rounded-lgfocus:ring focus:ring-blue-200 outline-none"
-              placeholder="Enter your username"
-            />
-          </div>
+      {/* Email */}
+      <input
+        type="email"
+        name="email"
+        placeholder="Email"
+        value={form.email}
+        onChange={handleChange}
+        className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/20 focus:border-[var(--neon)] outline-none"
+      />
 
-          <div>
-            <label className="block text-sm font-medium mb-1 text-blue-400">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-              className="w-full text-gray-600 px-3 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200 outline-none"
-              placeholder="Enter your email"
-            />
-          </div>
+      {/* Password */}
+      <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        value={form.password}
+        onChange={handleChange}
+        className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/20 focus:border-[var(--neon)] outline-none"
+      />
 
-          <div>
-            <label className="block text-sm font-medium mb-1 text-blue-400">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              className="w-full text-gray-600 px-3 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200 outline-none"
-              placeholder="Enter your password"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition disabled:opacity-70"
-          >
-            {loading ? "Creating account..." : "Sign Up"}
-          </button>
-        </form>
-      </div>
-    </div>
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full px-4 py-3 rounded-lg bg-[var(--neon)] text-black font-semibold hover:opacity-90 transition"
+      >
+        {loading ? "Creating Account..." : "Sign Up"}
+      </button>
+    </form>
   );
 };
 

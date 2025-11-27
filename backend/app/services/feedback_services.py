@@ -1,5 +1,6 @@
 import os
 from groq import Groq
+from openai import OpenAI
 from app.config import settings
 from app.ml.prompts import ResumePrompts
 import json
@@ -7,7 +8,7 @@ import logging
 import re
 
 logger=logging.getLogger(__name__)
-client = Groq(api_key=settings.GROQ_API_KEY)
+client = OpenAI(api_key=settings.OPENAI_API_KEY)
 class FeedbackService:
     @staticmethod
     def safe_feedback(ai_feedback):
@@ -26,7 +27,7 @@ class FeedbackService:
             logger.info("Generating feedback with OpenAI GPT-4...")
             prompt=ResumePrompts.get_resume_analysis_prompt(resume_text, extracted_skills)
             response= client.chat.completions.create(
-                model="llama3-70b-8192",
+                model="gpt-4.1",
                 messages=[
                     {
                         "role": "system",
@@ -62,7 +63,7 @@ class FeedbackService:
             "overall_score": 70,
             "feedback_sections": [
                 {
-                    "category": "Content Quality",
+                    "category": "Content fallback Quality",
                     "score": 70,
                     "strengths": ["Resume contains relevant information"],
                     "suggestions": ["Add more quantifiable achievements", "Use stronger action verbs"]

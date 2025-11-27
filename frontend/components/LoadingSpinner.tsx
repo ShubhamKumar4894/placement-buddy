@@ -5,14 +5,10 @@ interface LoadingSpinnerProps {
   text?: string; 
 }
 
-const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = 40, text }) => {
+const LoadingSpinner: React.FC<LoadingSpinnerProps> = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-3">
-      <div
-        className="animate-spin rounded-full border-4 border-blue-500 border-t-transparent"
-        style={{ width: size, height: size }}
-      />
-      {text && <p className="text-gray-600 font-medium">{text}</p>}
+    <div className="min-h-screen bg-[var(--navy)] text-white flex justify-center items-center">
+      <div className="animate-spin h-14 w-14 border-4 border-[var(--neon)] border-t-transparent rounded-full"></div>
     </div>
   );
 };

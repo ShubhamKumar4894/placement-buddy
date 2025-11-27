@@ -1,8 +1,10 @@
 from beanie import Document
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-
+from bson import ObjectId
+from pydantic import Field
 class Analysis(Document):
+    
     resume_id: str
     user_id: str
     overall_score: Optional[float] = 70

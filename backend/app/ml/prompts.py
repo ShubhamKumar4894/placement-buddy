@@ -6,6 +6,7 @@ class ResumePrompts:
         SYSTEM_PROMPT= f"""
             You are an expert resume reviewer and career coach. Analyze the following resume and provide detailed, actionable feedback.
             You are allowed to be absolutely brutely honest in your assessment to help the candidate improve their resume.
+            Generate overall score out of 100.
         Resume Text: {resume_text}
         
         Detected Skills: {', '.join(extracted_skills) if extracted_skills else 'None detected'}

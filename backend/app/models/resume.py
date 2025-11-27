@@ -7,7 +7,7 @@ from pydantic import  Field
 class Resume(Document):
     user_id: str          # ObjectId as str or user.id
     filename: str
-    filepath: str
+    file_url: str
     raw_text: Optional[str] = None
     parsed_sections: Optional[Dict] = None
     analysis_status: str = Field(default="PENDING")  # PENDING, PROCESSING, COMPLETED, FAILED

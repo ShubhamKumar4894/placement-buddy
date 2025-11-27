@@ -5,7 +5,7 @@ class ResumePrompts:
 
         SYSTEM_PROMPT= f"""
             You are an expert resume reviewer and career coach. Analyze the following resume and provide detailed, actionable feedback.
-
+            You are allowed to be absolutely brutely honest in your assessment to help the candidate improve their resume.
         Resume Text: {resume_text}
         
         Detected Skills: {', '.join(extracted_skills) if extracted_skills else 'None detected'}
@@ -57,7 +57,7 @@ class ResumePrompts:
     @staticmethod
     def get_job_match_prompt(resume_text: str, job_description: str, resume_skills: list) -> str:
         SYSTEM_PROMPT= f"""
-            You are an expert recruiter analyzing a candidate's resume against a job description.
+            You are an expert recruiter analyzing a candidate's resume against a job description. Provide a detailed assessment of how well the candidate matches the job requirements.
             Resume : {resume_text}
 
             Resume Skills: {', '.join(resume_skills) if resume_skills else 'None detected'}

@@ -1,4 +1,6 @@
 import os
+import cloudinary.uploader
+from app.utils.cloudinary_config import cloudinary
 import aiofiles 
 from fastapi import UploadFile,HTTPException
 from app.config import settings
@@ -22,46 +24,40 @@ class FileService:
         return True
     
     @staticmethod
-    async def save_uploaded_file(file:UploadFile,user_id:str)->dict:
-        cleaned_user_id = user_id.strip(' /\\')
-        
-        file_ext = file.filename.split('.')[-1].lower()
-        base_name = os.path.splitext(file.filename)[0][:20]
-        base_name = base_name.replace(" ", "_")
-
-        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
-        random_str = secrets.token_hex(2)
-
-        unique_filename = f"{base_name}_{timestamp}_{random_str}.{file_ext}"
-
-        base_upload_path = Path(settings.UPLOAD_DIR) / "uploads"
-        base_upload_path = base_upload_path.resolve() 
-
-        user_upload_path = base_upload_path / cleaned_user_id
-        
-        user_upload_path.mkdir(parents=True, exist_ok=True)
-        file_path = str(user_upload_path / unique_filename)
-        
+    async def save_uploaded_file(file: UploadFile, user_id: str) -> dict:
         try:
-            async with aiofiles.open(file_path, 'wb') as f:
-                content = await file.read()
-                await f.write(content)
-            file_size=len(content)    
-               
-            if(file_size > 5 * 1024 * 1024):  # 5MB limit
-                os.remove(file_path)
-                raise HTTPException(status_code=400, detail="File size exceeds 5MB limit")
+            # read content
+            content = await file.read()
+
+            file_ext = file.filename.split('.')[-1].lower()
+            base_name = file.filename.split('.')[0][:20].replace(" ", "_")
+
+            timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+            random_str = secrets.token_hex(2)
+
+            unique_filename = f"{base_name}_{timestamp}_{random_str}"
+
+            upload_result = cloudinary.uploader.upload(
+                content,
+                public_id=f"placement_buddy/{user_id}/{unique_filename}",
+                resource_type="raw"  # required for PDF, DOCX, TXT
+            )
+
+            cloudinary_url = upload_result["secure_url"]
+            file_size = len(content)
+
             return {
-                "file_path": file_path,
+                "file_url": cloudinary_url,
                 "file_size": file_size,
                 "original_filename": file.filename,
                 "file_type": file_ext
             }
+
         except Exception as e:
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")    
-        
+            raise HTTPException(
+                status_code=500,
+                detail=f"Cloud upload failed: {str(e)}"
+            )
     @staticmethod
     def delete_file(file_path: str) -> bool:
         try:

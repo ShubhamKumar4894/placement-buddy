@@ -1,8 +1,12 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException,Depends
 import os
+from bson import ObjectId
+from app.schemas.jd_match import JDMatchRequest
+from app.utils.cloudinary_utils import delete_from_cloudinary
 from app.services.file_services import FileService
 from app.services.resume_services import ResumeService
 from app.services.parser_services import PDFParserService
+from app.services.jd_match_service import JDMatchService
 from app.services.ml_services import MLService
 from app.services.feedback_services import FeedbackService
 from app.models.resume import Resume
@@ -13,33 +17,84 @@ from app.utils.security import get_current_user
 import logging
 router=APIRouter()
 logger = logging.getLogger(__name__)
+
+@router.post("/match")
+async def match_resume_with_jd(
+    data: JDMatchRequest,
+    user_id: str = Depends(get_current_user)
+):
+    """
+    Matches stored resume analysis against a pasted job description.
+    """
+
+    # Fetch analysis
+    analysis = await Analysis.find_one(
+        Analysis.id == ObjectId(data.analysis_id),
+        Analysis.user_id == user_id
+    )
+    if not analysis:
+        raise HTTPException(404, "Resume analysis not found")
+
+    # Fetch resume using analysis.resume_id
+    resume = await Resume.find_one(
+        Resume.id == ObjectId(analysis.resume_id),
+        Resume.user_id == user_id
+    )
+    if not resume:
+        raise HTTPException(404, "Linked resume not found")
+
+    # Extract data
+    resume_text = resume.raw_text
+    analysis_results = analysis.dict()
+
+    # Pass to AI matching service
+    match_result = await JDMatchService.match(
+        resume_text=resume_text,
+        analysis_results=analysis_results,
+        job_description=data.job_description
+    )
+
+    return {
+        "success": True,
+        "analysis_id": data.analysis_id,
+        "match_result": match_result
+    }
 @router.post("/upload")
-async def upload_file(file: UploadFile = File(...), user_id: str = Depends(get_current_user)):
+async def upload_file(
+    file: UploadFile = File(...),
+    user_id: str = Depends(get_current_user)
+):
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid or missing token")
+
     FileService.validate_file(file)
     file_info = await FileService.save_uploaded_file(file, user_id)
-    raw_text = PDFParserService.parse_resume(file_info["file_path"], file_info["file_type"])
+    file_url = file_info["file_url"]
+    file_type = file_info["file_type"]
+    raw_text = PDFParserService.parse_resume(file_url, file_type)
 
     if not raw_text:
         raise HTTPException(
-            status_code=404, 
-            detail="Could not extract any content from the file."
+            status_code=404,
+            detail="Could not extract any content from the uploaded resume."
         )
-    
-    cleaned_text = PDFParserService.clean_text(raw_text)
 
+    cleaned_text = PDFParserService.clean_text(raw_text)
     try:
-        resume_record=await ResumeService.create_resume_record(
+        resume_record = await ResumeService.create_resume_record(
             user_id=user_id,
             filename=file_info["original_filename"],
-            filepath=file_info["file_path"],
+            file_url=file_url    # UPDATED
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to create resume record: {str(e)}")
-    
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to create resume record: {str(e)}"
+        )
+
+    # Update cleaned text in DB
     updated_resume = await ResumeService.update_raw_text(
-        file_path=file_info["file_path"],
+        file_url=file_url,      # UPDATED
         user_id=user_id,
         cleaned_text=cleaned_text
     )
@@ -47,37 +102,42 @@ async def upload_file(file: UploadFile = File(...), user_id: str = Depends(get_c
     if not updated_resume:
         raise HTTPException(
             status_code=404,
-            detail="Resume document not found. Ensure file was uploaded correctly."
+            detail="Resume record not found after upload."
         )
+
     return {
-        "message": "File uploaded and metadata saved successfully", 
-        "file_path": file_info["file_path"], 
+        "message": "Resume uploaded and processed successfully",
+        "file_url": file_url,
         "resume_id": str(resume_record.id),
         "raw_text_length": len(cleaned_text),
         "status": "UPLOAD_OK"
     }
 
 @router.delete("/delete")
-async def delete_file(file_path: str, user_id: str = Depends(get_current_user)):
-    if user_id.strip(' /\\') not in file_path:
-        raise HTTPException(status_code=403, detail="You can only delete your own files")
-    deleted_file=FileService.delete_file(file_path)
+async def delete_resume(
+    file_url: str,
+    user_id: str = Depends(get_current_user)
+):
+    if user_id not in file_url.replace("/", ""):
+        raise HTTPException(
+            status_code=403,
+            detail="You can only delete your own uploaded files."
+        )
+    cloud_deleted = delete_from_cloudinary(file_url)
+    db_deleted = await ResumeService.delete_resume_record(file_url, user_id)
+    if cloud_deleted and db_deleted:
+        return {"message": "Resume deleted from Cloudinary and database successfully"}
 
-    db_record_deleted= await ResumeService.delete_resume_record(file_path, user_id)
+    if db_deleted and not cloud_deleted:
+        return {"message": "Database record deleted, but file not found on Cloudinary"}
 
-    if deleted_file and db_record_deleted:
-        return {"message": "File and record deleted successfully"}
-    
-    elif not deleted_file and db_record_deleted:
-        return {"message": "File record deleted successfully, file not found on disk (cleaned up)"}
+    if cloud_deleted and not db_deleted:
+        return {"message": "Cloudinary file deleted, but database record not found"}
 
-    elif deleted_file and not db_record_deleted:
-        raise HTTPException(status_code=500, detail="File deleted from disk, but database record was not found or deleted (inconsistent state)")
-        
-    else:
-        raise HTTPException(status_code=404, detail="File and record not found")
-        
-
+    raise HTTPException(
+        status_code=404,
+        detail="Resume not found on Cloudinary or in database"
+    )
 @router.post("/analyze/{resume_id}")
 async def analyze_resume(resume_id:str):
     try:
@@ -87,10 +147,9 @@ async def analyze_resume(resume_id:str):
         
         resume_text=resume.raw_text
         await resume.save()
-        print(resume.user_id)
         logger.info(f"Starting analysis for resume ID: {resume_id}")
         ml_service=MLService()
-        analysis=ml_service.analyze_resume(resume_text,resume.filepath)
+        analysis=ml_service.analyze_resume(resume_text,resume.file_url)
         feedback_service=FeedbackService()
         try:
             ai_feedback = await feedback_service.generate_resume_feedback(
